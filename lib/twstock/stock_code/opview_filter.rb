@@ -35,7 +35,7 @@ module Twstock
 
                 # patch (abnormal case)
                 else
-                    raise TableParseError unless id == 'p10'
+                    raise TableHeaderError unless id == 'p10'
 
                     # CANNOT remove header
                     # convert chinese to english in key, but in value
@@ -61,7 +61,7 @@ module Twstock
         class Error < StandardError
         end
 
-        class TableParseError < Error; end
+        class TableHeaderError < Error; end
     end
 end
 
