@@ -26,16 +26,15 @@ module Twstock
         def parse(list)
             # codes_info
             list.zip(Twstock::OpviewSimplefilter::ID).each do |codes, id|
-                # normal case
                 if codes.first == KEY[:chinese]
                     # remove header
                     # convert chinese to english in key, but in value
                     # convert array to hash
                     @codes_info.concat(codes[1..-1].map { |e| KEY[:english].zip(e).to_h })
 
-                # patch (abnormal case)
+                # no header => raise error
                 else
-                    raise TableHeaderError unless id == 'p10'
+                    raise TableHeaderError if id != 'p10' # patch (special case)
 
                     # CANNOT remove header
                     # convert chinese to english in key, but in value
@@ -61,7 +60,13 @@ module Twstock
         class Error < StandardError
         end
 
-        class TableHeaderError < Error; end
+        class TableHeaderError < Error
+            attr_reader :message
+
+            def initialize
+                @message = 'table has no header'
+            end
+        end
     end
 end
 
