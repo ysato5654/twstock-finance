@@ -8,13 +8,14 @@ require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/stock_code'
 
 Year    = '2020'
 Month   = 'May'
-Day     = '10a'
+Day     = '10b'
 Build   = [Day, Month, Year].join(' ')
 
 Version = Build + ' ' + '(' + 'twstock-finance' + ' ' + 'v' + Twstock::Finance::VERSION + ')'
 
 SHOW = ['all', 'twse', 'tpex']
 LANGUAGE = ['chinese', 'english']
+CODE_INFO_CONNECTION = "\s\|\s"
 
 def parse_option
     opt = OptionParser.new
@@ -53,20 +54,20 @@ def show_twstock_code_info(show:, lang:)
     # header
     header = Twstock::StockCode::KEY[lang.to_sym]
     STDOUT.puts header.join("\s\|\s")
-    STDOUT.puts [header.map { |e| "-" * e.length }].join("\s\|\s")
+    STDOUT.puts [header.map { |e| "-" * e.length }].join(CODE_INFO_CONNECTION)
 
     # body
     twstock.codes_info.each do |code_info|
         case show
         when SHOW[0]
-            STDOUT.puts code_info.values.join("\s\|\s")
+            STDOUT.puts code_info.values.join(CODE_INFO_CONNECTION)
         when SHOW[1]
             if code_info['market'] == '上市'
-                STDOUT.puts code_info.values.join("\s\|\s")
+                STDOUT.puts code_info.values.join(CODE_INFO_CONNECTION)
             end
         when SHOW[2]
             if code_info['market'] == '上櫃'
-                STDOUT.puts code_info.values.join("\s\|\s")
+                STDOUT.puts code_info.values.join(CODE_INFO_CONNECTION)
             end
         end
     end
