@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
     spec.required_ruby_version = '~> 2.5'
 
     spec.add_runtime_dependency 'histock-filter', '~> 0.4.0'
+    spec.add_runtime_dependency 'nokogiri'
 
     spec.add_development_dependency 'bundler', '~> 2.0'
     spec.add_development_dependency 'rake', '>= 12.3.3'
