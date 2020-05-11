@@ -1,0 +1,8 @@
+## v0.1.1
+[full changelog](http://github.com/ysato5654/twstock-finance/compare/v0.1.0...v0.1.1)
+
+* fix gem dependency bug
+
+## v0.1.0
+
+* add Twstock::StockCode class
