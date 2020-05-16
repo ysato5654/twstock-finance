@@ -1,5 +1,17 @@
 # Twstock::Finance
 
+## Installation
+
+```
+$ rake install
+```
+
+Or
+
+```
+$ sudo rake install
+```
+
 ## Usage
 
 ### Get Stock Codes
