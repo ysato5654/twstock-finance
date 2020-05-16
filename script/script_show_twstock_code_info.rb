@@ -1,47 +1,26 @@
 #! /opt/local/bin/ruby
 # coding: utf-8
 
-require 'optparse'
+require File.dirname(File.realpath(__FILE__)) + '/command_line_option'
 
 require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/finance'
 require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/stock_code'
 
 Year    = '2020'
 Month   = 'May'
-Day     = '10b'
+Day     = '16'
 Build   = [Day, Month, Year].join(' ')
 
 Version = Build + ' ' + '(' + 'twstock-finance' + ' ' + 'v' + Twstock::Finance::VERSION + ')'
 
-SHOW = ['all', 'twse', 'tpex']
-LANGUAGE = ['chinese', 'english']
+Show = [:all, :twse, :tpex]
+Language = [:chinese, :english]
+Options = [
+    {:short => 's', :long => 'show', :arg => Show, :description => "show code setting (#{Show.join('/')})"},
+    {:short => 'l', :long => 'lang', :arg => Language, :description => "language setting (#{Language.join('/')}) (default: #{Language.first})"}
+]
+
 CODE_INFO_CONNECTION = "\s\|\s"
-
-def parse_option
-    opt = OptionParser.new
-
-    option = Hash.new
-    option[:lang] = LANGUAGE.first
-
-    opt.on('--show VAL', "show code setting (#{SHOW.join('/')})") { |v| option[:show] = v }
-    opt.on('--lang VAL', "language setting (#{LANGUAGE.join('/')}) (default: #{LANGUAGE.first})") { |v| option[:lang] = v }
-
-    opt.parse(ARGV)
-
-    # no necessary option
-    if option[:show].nil?
-        STDERR.puts "#{__FILE__}: no option: --show (--help will show valid options)"
-        raise SystemExit
-    end
-
-    # invalid option (show setting)
-    raise OptionParser::InvalidArgument unless SHOW.include?(option[:show])
-
-    # invalid argument (language setting)
-    raise OptionParser::InvalidArgument unless LANGUAGE.include?(option[:lang])
-
-    option
-end
 
 def show_twstock_code_info(show:, lang:)
     begin
@@ -75,18 +54,25 @@ end
 
 if $0 == __FILE__
 
+    command_line_option = TweetActivityScript::CommandLineOption.new(:params => Options)
+
     # parse option
     begin
-        option = parse_option
+        option = command_line_option.parse
 
     # display help or no necessary option fail
     rescue SystemExit => e
         exit(0)
 
-    # invalid option (undefined option)
+    rescue TweetActivityScript::MissingOption => e
+        STDERR.puts "#{__FILE__}: #{e.message} (--help will show valid options)"
+        exit(0)
+
+    # invalid option (undefined option) or missing argument or invalid argument
     rescue Exception => e
         STDERR.puts "#{__FILE__}: #{e} (--help will show valid options)"
         exit(0)
+
     end
 
     filename = File.basename(__FILE__).gsub(File.extname(__FILE__), '')
