@@ -7,8 +7,8 @@ require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/finance'
 require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/stock_code'
 
 Year    = '2020'
-Month   = 'May'
-Day     = '16'
+Month   = 'Jun'
+Day     = '07'
 Build   = [Day, Month, Year].join(' ')
 
 Version = Build + ' ' + '(' + 'twstock-finance' + ' ' + 'v' + Twstock::Finance::VERSION + ')'
@@ -38,13 +38,13 @@ def show_twstock_code_info(show:, lang:)
     # body
     twstock.codes_info.each do |code_info|
         case show
-        when SHOW[0]
+        when Show[0]
             STDOUT.puts code_info.values.join(CODE_INFO_CONNECTION)
-        when SHOW[1]
+        when Show[1]
             if code_info['market'] == '上市'
                 STDOUT.puts code_info.values.join(CODE_INFO_CONNECTION)
             end
-        when SHOW[2]
+        when Show[2]
             if code_info['market'] == '上櫃'
                 STDOUT.puts code_info.values.join(CODE_INFO_CONNECTION)
             end
@@ -73,6 +73,11 @@ if $0 == __FILE__
         STDERR.puts "#{__FILE__}: #{e} (--help will show valid options)"
         exit(0)
 
+    end
+
+    if option[:show].nil? or option[:lang].nil?
+        STDERR.puts "#{__FILE__}: missing option (--help will show valid options)"
+        exit(0)
     end
 
     filename = File.basename(__FILE__).gsub(File.extname(__FILE__), '')
