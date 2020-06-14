@@ -10,6 +10,7 @@ module Twstock
             when 'month' then raise NoSupportedFunction
             when 'quarter'
                 financial_data = merge(
+                    :key => '年度/季別',
                     :list1 => histock.income_statement(code),
                     :list2 => histock.profit_ratio(code),
                     :list3 => histock.income_rate(code, period))
@@ -21,12 +22,31 @@ module Twstock
             financial_data
         end
 
+        def corporate_value(code:)
+            histock = Histock::Filter.new
+
+            corporate_value = merge(
+                :key => '年度/月份',
+                :list1 => histock.price_to_earning_ratio(code),
+                :list2 => histock.price_book_ratio(code),
+                :list3 => [])
+
+            corporate_value
+            # => [
+            #        {
+            #            "年度/月份"=>"2020/06",
+            #            "本益比"=>20.44,
+            #            "股價淨值比"=>4.89
+            #        },
+            #        {},
+            #        :
+            #    ]
+        end
+
         private
 
-        def merge(list1:, list2:, list3:)
+        def merge(key:, list1:, list2:, list3:)
             list = Array.new
-
-            key = '年度/季別'
 
             period_list = list1.map { |e| e[key] } + list2.map { |e| e[key] } + list3.map { |e| e[key] }
             period_list.uniq!
