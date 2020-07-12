@@ -1,4 +1,5 @@
 require 'histock/filter'
+require 'date'
 require File.expand_path(File.dirname(__FILE__)) + '/error'
 
 module Twstock
@@ -72,5 +73,47 @@ module Twstock
 
             list
         end
+
+        private
+
+        def parse_dividend_policy_table_value(value)
+            if value.is_not_applicable? then nil
+            elsif value.empty? then value
+            elsif value.is_year? then value#.to_i
+            elsif value.is_date? then value
+            #elsif value.is_date? then Date.parse(value)
+            elsif value.is_currency? then value.to_currency
+            else
+                puts 'ERROR'
+                while true; end
+            end
+        end
+    end
+end
+
+class String
+    def is_not_applicable?
+        self == '-'
+    end
+
+    def is_year?
+        (self =~ /^[1-2][0-9]{3}$/).nil? ? false : true
+    end
+
+    def is_date?
+        (self =~ /^[0-1][0-9]\/[0-3][0-9]$/).nil? ? false : true
+    end
+
+    def is_currency?
+        (self =~ /^[+-]?[0-9]*[\,]?[0-9]*[\.]?[0-9]+$/).nil? ? false : true
+    end
+
+    def to_currency
+        unless self.is_currency?
+            STDERR.puts "#{__FILE__}:#{__LINE__}: argument - #{self}"
+            raise ArgumentError
+        end
+
+        self.gsub(/[\,]/, '').to_f
     end
 end
