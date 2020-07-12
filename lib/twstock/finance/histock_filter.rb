@@ -44,6 +44,11 @@ module Twstock
             #    ]
         end
 
+        def company_profile(code:)
+            histock = Histock::Filter.new
+            histock.company_profile(code)
+        end
+
         private
 
         def merge(key:, list1:, list2:, list3:)
