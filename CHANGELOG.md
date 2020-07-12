@@ -1,3 +1,9 @@
+## v0.4.0
+[full changelog](http://github.com/ysato5654/twstock-finance/compare/v0.3.0...v0.4.0)
+
+* update Twstock::Finance class
+    - add company_profile method
+
 ## v0.3.0
 [full changelog](http://github.com/ysato5654/twstock-finance/compare/v0.2.1...v0.3.0)
 
