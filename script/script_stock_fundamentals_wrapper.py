@@ -115,7 +115,7 @@ class StockFundamental():
                 False       fetch fail (not found ruby script / execute script error / parse error)
     """
     def fetch(self, market:str, sector:str) -> bool:
-        debug_message(msg='execute ruby')
+        print('execute ruby')
 
         try:
             script = RubyScript(market=market, sector=sector)
