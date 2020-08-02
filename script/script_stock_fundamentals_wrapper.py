@@ -18,7 +18,7 @@ class RubyScript():
     """
     raise   FileNotFoundError
     """
-    def __init__(self, market:str, sector:str):
+    def __init__(self, code:str='', market:str='', sector:str=''):
         self.output = []
 
         path = self.FILE_NAME
@@ -26,7 +26,10 @@ class RubyScript():
         if not os.path.exists(path):
             raise FileNotFoundError('no such file or directory - %s' % path)
 
-        self.cmd = ['ruby', path, '--market=' + market, '--sector=' + sector]
+        if not code == '':
+            self.cmd = ['ruby', path, '--code=' + code]
+        else:
+            self.cmd = ['ruby', path, '--market=' + market, '--sector=' + sector]
 
     """
     return      True        finish process with return code 0
@@ -114,11 +117,11 @@ class StockFundamental():
     return      True        fetch success
                 False       fetch fail (not found ruby script / execute script error / parse error)
     """
-    def fetch(self, market:str, sector:str) -> bool:
+    def fetch(self, code:str='', market:str='', sector:str='') -> bool:
         debug_message(msg='execute ruby')
 
         try:
-            script = RubyScript(market=market, sector=sector)
+            script = RubyScript(code=code) if not code == '' else RubyScript(market=market, sector=sector)
         except FileNotFoundError as e:
             print('%s:%s: %s (%s)' % (__file__, 'error', e, e.__class__.__name__))
             return False
