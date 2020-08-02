@@ -9,8 +9,8 @@ require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/finance'
 require File.dirname(File.realpath(__FILE__)) + '/../lib/twstock/stock_code'
 
 Year    = '2020'
-Month   = 'Jul'
-Day     = '19'
+Month   = 'Aug'
+Day     = '02'
 Build   = [Day, Month, Year].join(' ')
 
 Version = Build + ' ' + '(' + 'twstock-finance' + ' ' + 'v' + Twstock::Finance::VERSION + ')'
@@ -161,6 +161,7 @@ if $0 == __FILE__
     twstock = ScriptTwstock::StockFundamental.new
 
     options = [
+        {:short => 'c', :long => 'code', :arg => '', :description => "code"},
         {:short => 'm', :long => 'market', :arg => twstock.market_list, :description => "market (#{twstock.market_list.join('/')})"},
         {:short => 's', :long => 'sector', :arg => twstock.sector_list, :description => "sector (#{twstock.sector_list.join('/')})"}
     ]
@@ -186,15 +187,21 @@ if $0 == __FILE__
 
     end
 
-    if option[:market].nil? or option[:sector].nil?
-        STDERR.puts "#{__FILE__}: missing option (--help will show valid options)"
-        exit(1) # error exit
+    if option[:code].nil?
+        if option[:market].nil? or option[:sector].nil?
+            STDERR.puts "#{__FILE__}: missing option (--help will show valid options)"
+            exit(1) # error exit
+        end
     end
 
     display = ScriptTwstock::Display.new
     display.version
 
-    codes_info = twstock.get_codes(:market => option[:market], :sector => option[:sector])
+    if option[:code].nil?
+        codes_info = twstock.get_codes(:market => option[:market], :sector => option[:sector])
+    else
+        codes_info = [{'code' => option[:code]}]
+    end
 
     display.thead
 
