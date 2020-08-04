@@ -1,5 +1,8 @@
 import os
 import sys
+import datetime
+import argparse
+import csv
 import subprocess
 import re
 from re import sub
@@ -8,8 +11,62 @@ from retry import retry
 
 import twstock
 
+__version__ = '0.1.0'
+
+class MissingOption(Exception):
+    pass
+
 class ParseError(Exception):
     pass
+
+class CommandLineOption():
+    def parse(self):
+        parser = argparse.ArgumentParser()
+
+        parser.add_argument('-f', '--file', type=str, help='stock code list file')
+        parser.add_argument('-m', '--market', type=str, choices=StockFundamental.Market['english'], help='market (%s)' % ('/'.join(StockFundamental.Market['english'])))
+        parser.add_argument('--version', action='version', version='%s Ver.%s' % (os.path.basename(__file__), __version__), help='show version and exit')
+
+        args = parser.parse_args()
+
+        if self.__is_missing_option(args):
+            raise MissingOption('missing option')
+
+        return args
+
+    def __is_missing_option(self, option):
+        if option.file == None:
+            if option.market == None:
+                return True
+
+        return False
+
+class ParseCodeList():
+
+    Key = {
+        'chinese' : ['代號', '名稱', '市場'],
+        'english' : ['code', 'company', 'market'],
+    }
+
+    """
+    raise   FileNotFoundError/ParseError
+    """
+    def __init__(self, path:str):
+        self.code_list = []
+
+        if not os.path.exists(path):
+            raise FileNotFoundError('no such file or directory - %s' % path)
+
+        with open(path, 'r') as file:
+            reader = csv.reader(file, delimiter=',')
+            list = [row for row in reader]
+
+        if not self.Key['chinese'] == list[0]:
+            raise ParseError('not expected key - %s' % str(list[0]))
+
+        key = self.Key['english']
+
+        self.code_list = [dict(zip(key, value)) for value in list[1:]]
 
 class RubyScript():
 
@@ -93,6 +150,12 @@ class RubyScript():
         return list
 
 class StockFundamental():
+
+    Market = {
+        'chinese' : ['上市', '上櫃'],
+        'english' : ['twse', 'tpex'],
+    }
+
     def __init__(self):
         self.list = []
         # => self.list = [
@@ -207,3 +270,46 @@ class StockFundamental():
     @retry(requests.ConnectionError, tries=5, delay=1, backoff=2)
     def __get_realtime_info(self, code:str):
         return twstock.realtime.get(code)
+
+if __name__ == '__main__':
+
+    try:
+        option = CommandLineOption().parse()
+    except MissingOption as e:
+        print('%s: %s: %s' % (__file__, 'error', e))
+        sys.exit()
+
+    try:
+        code_list = ParseCodeList(path=option.file).code_list
+    except FileNotFoundError as e:
+        print('%s: %s: %s (%s)' % (__file__, 'error', e, e.__class__.__name__))
+        sys.exit()
+    except ParseError as e:
+        print('%s: %s: %s (%s)' % (__file__, 'error', e, e.__class__.__name__))
+        sys.exit()
+
+    path  = os.path.dirname(os.path.abspath(__file__))
+    path += '/' + '_'.join(['stock_fundamentals', 'market', option.market, datetime.datetime.now().strftime('%Y%m%d_%H%M%S')]) + '.log'
+
+    stock_fundamentals = StockFundamental()
+
+    for idx, code in enumerate(code_list):
+        if not code['market'] == stock_fundamentals.Market['chinese'][stock_fundamentals.Market['english'].index(option.market)]:
+            continue
+
+        if not stock_fundamentals.fetch(code=code['code']):
+            sys.exit()
+
+        stock_fundamentals.insert_price()
+
+        if idx == 0:
+            with open(path, 'a') as f:
+                f.write(' '.join(list(stock_fundamentals.list[0].keys())))
+                f.write('\n')
+
+        for fundamental in stock_fundamentals.list:
+            with open(path, 'a') as f:
+                f.write(' '.join(list(fundamental.values())))
+                f.write('\n')
+
+    print('finish fetch with no error')
